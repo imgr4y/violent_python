@@ -1,4 +1,5 @@
 import optparse
+import nmap
 from socket import *
 from threading import *
 
@@ -33,11 +34,19 @@ def portScan(tgtHost, tgtPorts):
         print '\n[+] Scan Results for: ' + tgtName[0]
     except:
         print '\n[+] Scan Results for : ' + tgtIP
+    
     setdefaulttimeout(1)
 
     for tgtPort in tgtPorts:
-        print 'Scanning port ' + tgtPort
-        connScan(tgtHost, int(tgtPort))
+        t = Thread(target=connScan, args=(tgtHost, int(tgtPort)))
+        t.start()
+        
+def nmapScan(tgtHost, tgtPort):
+    nmScan = nmap.PortScanner()
+    nmScan.scan(tgtHost, tgtPort)
+
+    state=nmScan[tgtHost]['tcp'][int(tgtPort)]['state']
+    print " [*] " + tgtHost + " tcp/" + tgtPort + " " + state
 
 def main():
     parser = optparse.OptionParser('usage %prog -H <target host> -p <target port>')
@@ -54,7 +63,8 @@ def main():
         print parser.usage
         exit(0)
 
-    portScan(tgtHost, tgtPorts)
+    for tgtPort in tgtPorts:
+        nmapScan(tgtHost, tgtPort)
 
 if __name__ == '__main__':
     main()
