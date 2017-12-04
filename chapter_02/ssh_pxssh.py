@@ -1,4 +1,4 @@
-import pxssh
+from pexpect import pxssh
 
 def send_command(s, cmd):
     s.sendline(cmd)
